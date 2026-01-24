@@ -1,1 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>18+ Рулетка - Уровни сложности</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #050510;
+      --wheel-man: #4a90e2;
+      --wheel-woman: #ff69b4;
+      --wheel-mutual: #f59e0b;
+      --text: #f7f7f7;
+      --card: #151522;
+      --warning: #ff4444;
+      --success: #4ade80;
+      --accent: #a855f7;
+    }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #221133 0, #050510 70%);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+      padding: 12px;
+      gap: 16px;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .result-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      height: 55vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .level-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .level-title {
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .next-level-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .next-level-btn:hover {
+      background: #22c55e;
+      transform: scale(1.02);
+    }
+
+    .wheel-section {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .task-counter {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      text-align: center;
+      min-width: 80px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .wheel-container {
+      width: min(42vw, 180px);
+      height: min(42vw, 180px);
+      cursor: pointer;
+      user-select: none;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .wheel-container.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px solid #333;
+      position: relative;
+      transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: 0 12px 30px rgba(74, 144, 226, 0.4);
+    }
+
+    .wheel.man {
+      background: var(--wheel-man);
+      box-shadow: 0 12px 30px rgba(74, 144, 226, 0.4);
+    }
+
+    .wheel.woman {
+      background: var(--wheel-woman);
+      box-shadow: 0 12px 30px rgba(255, 105, 180, 0.4);
+    }
+
+    .wheel.mutual {
+      background: var(--wheel-mutual);
+      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.4);
+    }
+
+    .gender-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+      line-height: 1;
+    }
+
+    .gender-icon.mutual {
+      font-size: 28px;
+      white-space: pre;
+    }
+
+    .gif-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .gif-wrapper img {
+      max-width: 98%;
+      max-height: 98%;
+      border-radius: 12px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.9);
+      object-fit: contain;
+    }
+
+    .message {
+      color: #888;
+      font-size: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .error {
+      color: var(--warning);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .loading {
+      color: #aaa;
+    }
+
+    @media (min-width: 768px) {
+      .wheel-container {
+        width: 220px;
+        height: 220px;
+      }
+      .gender-icon {
+        font-size: 44px;
+      }
+      .gender-icon.mutual {
+        font-size: 36px;
+      }
+      .result-card {
+        height: 60vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-content">
+    <div class="result-card">
+      <div class="gif-wrapper" id="gifWrapper">
+        <div class="message loading">Загружаем задания...</div>
+      </div>
+    </div>
+
+    <div class="level-header">
+      <div class="level-title" id="levelTitle">Прелюдия</div>
+      <button class="next-level-btn" id="nextLevelBtn">Следующий уровень</button>
+    </div>
+
+    <div class="wheel-section">
+      <div class="task-counter" id="taskCounter">
+        Заданий: <span id="taskCount">0</span> / <span id="totalTasks">?</span>
+      </div>
+      
+      <div class="wheel-container" id="wheelContainer">
+        <div id="wheel" class="wheel man">
+          <div class="gender-icon" id="genderIcon">🙎‍♂️</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LEVELS = [
+      { name: 'prelude', type: 'separate', files: ['man-prelude-tasks.json', 'woman-prelude-tasks.json'] },
+      { name: 'Fully clothed', type: 'separate', files: ['man-Fully clothed-tasks.json', 'woman-Fully clothed-tasks.json'] },
+      { name: 'Mutually clothed', type: 'mutual', file: 'Mutually clothed-tasks.json' },
+      { name: 'Undressing', type: 'separate', files: ['man-Undressing-tasks.json', 'woman-Undressing-tasks.json'] },
+      { name: 'Foreplay without clothes', type: 'separate', files: ['man-Foreplay without clothes-tasks.json', 'woman-Foreplay without clothes-tasks.json'] },
+      { name: 'Without clothes', type: 'separate', files: ['man-Without clothes-tasks.json', 'woman-Without clothes-tasks.json'] },
+      { name: 'Mutually without clothes', type: 'mutual', file: 'Mutually without clothes-tasks.json' },
+      { name: 'Sex', type: 'separate', files: ['man-Sex-tasks.json', 'woman-Sex-tasks.json'] },
+      { name: 'Orgasm', type: 'separate', files: ['man-Orgasm-tasks.json', 'woman-Orgasm-tasks.json'] }
+    ];
+
+    let currentLevelIndex = 0;
+    let currentLevel = LEVELS[0];
+    let tasksData = {};
+    let usedTasks = [];
+    let totalTasks = 0;
+    let isSpinning = false;
+    let rotationAngle = 0;
+    let isDataLoaded = false;
+    let currentGenderIndex = 0; // 0 = man, 1 = woman
+
+    const elements = {
+      levelTitle: document.getElementById('levelTitle'),
+      nextLevelBtn: document.getElementById('nextLevelBtn'),
+      taskCount: document.getElementById('taskCount'),
+      totalTasks: document.getElementById('totalTasks'),
+      wheelContainer: document.getElementById('wheelContainer'),
+      wheel: document.getElementById('wheel'),
+      genderIcon: document.getElementById('genderIcon'),
+      gifWrapper: document.getElementById('gifWrapper')
+    };
+
+    async function loadCurrentLevel() {
+      elements.gifWrapper.innerHTML = '<div class="message loading">Загрузка уровня...</div>';
+      
+      try {
+        if (currentLevel.type === 'mutual') {
+          const response = await fetch(currentLevel.file);
+          if (!response.ok) throw new Error(`${currentLevel.file} не найден`);
+          tasksData = await response.json();
+          usedTasks = [];
+          totalTasks = tasksData.length;
+          elements.genderIcon.textContent = '🙎‍♂️\n🙎‍♀️';
+          elements.genderIcon.className = 'gender-icon mutual';
+          elements.wheel.className = 'wheel mutual';
+        } else {
+          const [manData, womanData] = await Promise.all([
+            fetch(currentLevel.files[0]).then(r => {
+              if (!r.ok) throw new Error(`${currentLevel.files[0]} не найден`);
+              return r.json();
+            }),
+            fetch(currentLevel.files[1]).then(r => {
+              if (!r.ok) throw new Error(`${currentLevel.files[1]} не найден`);
+              return r.json();
+            })
+          ]);
+          tasksData = { man: manData, woman: womanData };
+          usedTasks = [];
+          totalTasks = manData.length + womanData.length;
+          elements.genderIcon.textContent = '🙎‍♂️';
+          elements.genderIcon.className = 'gender-icon';
+          elements.wheel.className = 'wheel man';
+          currentGenderIndex = 0;
+        }
+        
+        updateCounter();
+        checkGameStatus();
+        console.log(`✅ Уровень "${currentLevel.name}" загружен: ${totalTasks} заданий`);
+        return true;
+      } catch (error) {
+        elements.gifWrapper.innerHTML = `
+          <div class="error message">
+            ❌ Ошибка загрузки уровня "${currentLevel.name}": ${error.message}
+          </div>
+        `;
+        return false;
+      }
+    }
+
+    function nextLevel() {
+      if (currentLevelIndex < LEVELS.length - 1) {
+        currentLevelIndex++;
+        currentLevel = LEVELS[currentLevelIndex];
+        loadCurrentLevel();
+      } else {
+        elements.gifWrapper.innerHTML = `
+          <div class="message">
+            🎉 ИГРА ЗАВЕРШЕНА! 🎉<br>
+            Пройдено всех уровней: ${currentLevelIndex + 1}
+          </div>
+        `;
+      }
+    }
+
+    function updateCounter() {
+      elements.taskCount.textContent = usedTasks.length;
+      elements.totalTasks.textContent = totalTasks;
+      elements.levelTitle.textContent = currentLevel.name;
+    }
+
+    function getRandomUnusedTask() {
+      let availableTasks = [];
+      
+      if (currentLevel.type === 'mutual') {
+        // Mutual уровни - все задания из одного файла
+        availableTasks = tasksData.filter(task => !usedTasks.includes(task));
+      } else {
+        // Separate уровни - чередуем полы
+        const gender = currentGenderIndex === 0 ? 'man' : 'woman';
+        availableTasks = tasksData[gender].filter(task => !usedTasks.includes(task));
+      }
+      
+      if (availableTasks.length === 0) {
+        return null;
+      }
+      
+      const randomIndex = Math.floor(Math.random() * availableTasks.length);
+      const selectedTask = availableTasks[randomIndex];
+      usedTasks.push(selectedTask);
+      
+      // Переключаем пол для следующего раза (только для separate уровней)
+      if (currentLevel.type !== 'mutual') {
+        currentGenderIndex = (currentGenderIndex + 1) % 2;
+      }
+      
+      updateCounter();
+      return selectedTask;
+    }
+
+    function hasAvailableTasks() {
+      return usedTasks.length < totalTasks;
+    }
+
+    function checkGameStatus() {
+      if (!hasAvailableTasks()) {
+        elements.wheelContainer.classList.add('disabled');
+        elements.gifWrapper.innerHTML = `
+          <div class="message">
+            ✅ Уровень "${currentLevel.name}" завершен!<br>
+            Выполнено: ${usedTasks.length}/${totalTasks}<br>
+            <button class="next-level-btn" onclick="nextLevel()" style="margin-top: 12px; padding: 8px 16px;">
+              Следующий уровень
+            </button>
+          </div>
+        `;
+        return false;
+      }
+      
+      elements.wheelContainer.classList.remove('disabled');
+      return true;
+    }
+
+    function showGif(taskUrl) {
+      elements.gifWrapper.innerHTML = '<div class="message loading">Загрузка GIF...</div>';
+      
+      const img = new Image();
+      img.onload = () => {
+        elements.gifWrapper.innerHTML = '';
+        elements.gifWrapper.appendChild(img);
+        checkGameStatus();
+      };
+      img.onerror = () => {
+        elements.gifWrapper.innerHTML = '<div class="error message">Ошибка загрузки GIF</div>';
+      };
+      img.src = taskUrl;
+    }
+
+    function spinWheel() {
+      if (isSpinning || elements.wheelContainer.classList.contains('disabled') || !isDataLoaded) {
+        return;
+      }
+      
+      isSpinning = true;
+      elements.gifWrapper.innerHTML = '<div class="message">Крутим рулетку...</div>';
+
+      const spinAmount = 1800 + Math.random() * 720;
+      rotationAngle += spinAmount;
+      elements.wheel.style.transform = `rotate(${rotationAngle}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        
+        // Обновляем визуал колеса для separate уровней
+        if (currentLevel.type !== 'mutual') {
+          const isManTurn = currentGenderIndex === 0;
+          elements.genderIcon.textContent = isManTurn ? '🙎‍♂️' : '🙎‍♀️';
+          elements.wheel.className = isManTurn ? 'wheel man' : 'wheel woman';
+        }
+        
+        const taskUrl = getRandomUnusedTask();
+        if (taskUrl) {
+          showGif(taskUrl);
+        } else {
+          checkGameStatus();
+        }
+      }, 2000);
+    }
+
+    async function initGame() {
+      isDataLoaded = await loadCurrentLevel();
+      if (isDataLoaded) {
+        console.log('🎮 Игра готова!');
+      }
+    }
+
+    // События
+    elements.wheelContainer.onclick = spinWheel;
+    elements.wheelContainer.ontouchstart = (e) => { e.preventDefault(); spinWheel(); };
+    elements.nextLevelBtn.onclick = nextLevel;
+
+    // Запуск
+    initGame();
+  </script>
+</body>
+</html>
