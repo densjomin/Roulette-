@@ -1,1 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>18+ Рулетка - Уровни сложности</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #050510;
+      --wheel-man: #4a90e2;
+      --wheel-woman: #ff69b4;
+      --text: #f7f7f7;
+      --card: #151522;
+      --warning: #ff4444;
+      --success: #4ade80;
+      --accent: #a855f7;
+    }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #221133 0, #050510 70%);
+      color: var(--text);
+      font-family: system-ui, sans-serif;
+      padding: 12px;
+      gap: 16px;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .result-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      height: 55vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .level-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .level-title {
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .next-level-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .next-level-btn:hover {
+      background: #22c55e;
+      transform: scale(1.02);
+    }
+
+    .wheel-section {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .counter.man {
+      order: 1;
+      background: rgba(74, 144, 226, 0.2);
+      border: 1px solid var(--wheel-man);
+      border-radius: 12px;
+      padding: 12px 8px;
+      text-align: center;
+      min-width: 70px;
+      font-size: 12px;
+    }
+
+    .wheel-container {
+      width: min(42vw, 180px);
+      height: min(42vw, 180px);
+      cursor: pointer;
+      user-select: none;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+      order: 2;
+    }
+
+    .counter.woman {
+      order: 3;
+      background: rgba(255, 105, 180, 0.2);
+      border: 1px solid var(--wheel-woman);
+      border-radius: 12px;
+      padding: 12px 8px;
+      text-align: center;
+      min-width: 70px;
+      font-size: 12px;
+    }
+
+    .counter-icon {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .counter-stats {
+      font-size: 12px;
+      opacity: 0.9;
+      font-weight: 600;
+    }
+
+    .wheel-container.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px solid #333;
+      position: relative;
+      transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: 0 12px 30px rgba(74, 144, 226, 0.4);
+    }
+
+    .wheel.man {
+      background: var(--wheel-man);
+      box-shadow: 0 12px 30px rgba(74, 144, 226, 0.4);
+    }
+
+    .wheel.woman {
+      background: var(--wheel-woman);
+      box-shadow: 0 12px 30px rgba(255, 105, 180, 0.4);
+    }
+
+    .gender-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+    }
+
+    .gif-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .gif-wrapper img {
+      max-width: 98%;
+      max-height: 98%;
+      border-radius: 12px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.9);
+      object-fit: contain;
+    }
+
+    .message {
+      color: #888;
+      font-size: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .error {
+      color: var(--warning);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .loading {
+      color: #aaa;
+    }
+
+    @media (min-width: 768px) {
+      .wheel-container {
+        width: 220px;
+        height: 220px;
+      }
+      .gender-icon {
+        font-size: 44px;
+      }
+      .result-card {
+        height: 60vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-content">
+    <div class="result-card">
+      <div class="gif-wrapper" id="gifWrapper">
+        <div class="message loading">Загружаем задания...</div>
+      </div>
+    </div>
+
+    <div class="level-header">
+      <div class="level-title" id="levelTitle">Прелюдия</div>
+      <button class="next-level-btn" id="nextLevelBtn">Следующий уровень</button>
+    </div>
+
+    <div class="wheel-section">
+      <div class="counter man" id="manCounter">
+        <div class="counter-icon">🙎🏻‍♂️</div>
+        <div class="counter-stats" id="manStats">0 / ?</div>
+      </div>
+      
+      <div class="wheel-container" id="wheelContainer">
+        <div id="wheel" class="wheel man">
+          <div class="gender-icon" id="genderIcon">🙎‍♂️</div>
+        </div>
+      </div>
+      
+      <div class="counter woman" id="womanCounter">
+        <div class="counter-icon">🙎🏻‍♀️</div>
+        <div class="counter-stats" id="womanStats">0 / ?</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🎯 Система уровней сложности (код тот же)
+    const LEVELS = [
+      'prelude',
+      'Fully clothed',
+      'Mutually clothed', 
+      'Undressing',
+      'Foreplay without clothes',
+      'Without clothes',
+      'Mutually without clothes',
+      'Sex',
+      'Orgasm'
+    ];
+
+    let currentLevelIndex = 0;
+    let currentLevel = LEVELS[0];
+    let tasks = {};
+    let usedTasks = {};
+    let isSpinning = false;
+    let currentGender = 'man';
+    let rotationAngle = 0;
+    let isDataLoaded = false;
+
+    const elements = {
+      levelTitle: document.getElementById('levelTitle'),
+      nextLevelBtn: document.getElementById('nextLevelBtn'),
+      manStats: document.getElementById('manStats'),
+      womanStats: document.getElementById('womanStats'),
+      wheelContainer: document.getElementById('wheelContainer'),
+      wheel: document.getElementById('wheel'),
+      genderIcon: document.getElementById('genderIcon'),
+      gifWrapper: document.getElementById('gifWrapper')
+    };
+
+    async function loadCurrentLevel() {
+      const levelManFile = `man-${currentLevel}-tasks.json`;
+      const levelWomanFile = `woman-${currentLevel}-tasks.json`;
+      
+      elements.gifWrapper.innerHTML = '<div class="message loading">Загрузка уровня...</div>';
+      
+      const [manLoaded, womanLoaded] = await Promise.all([
+        fetch(levelManFile).then(r => r.ok ? r.json() : Promise.reject()).then(data => {
+          if (!tasks[currentLevel]) tasks[currentLevel] = {};
+          tasks[currentLevel].man = data;
+          if (!usedTasks[currentLevel]) usedTasks[currentLevel] = { man: [], woman: [] };
+          return true;
+        }).catch(() => false),
+        fetch(levelWomanFile).then(r => r.ok ? r.json() : Promise.reject()).then(data => {
+          if (!tasks[currentLevel]) tasks[currentLevel] = {};
+          tasks[currentLevel].woman = data;
+          return true;
+        }).catch(() => false)
+      ]);
+
+      if (!manLoaded || !womanLoaded) {
+        elements.gifWrapper.innerHTML = `
+          <div class="error message">
+            ❌ Файлы не найдены:<br>
+            ${levelManFile}<br>${levelWomanFile}
+          </div>
+        `;
+        return false;
+      }
+
+      console.log(`✅ Уровень "${currentLevel}" загружен:`, 
+        tasks[currentLevel].man.length, 'муж', tasks[currentLevel].woman.length, 'жен');
+      
+      updateCounters();
+      checkGameStatus();
+      return true;
+    }
+
+    function nextLevel() {
+      if (currentLevelIndex < LEVELS.length - 1) {
+        currentLevelIndex++;
+        currentLevel = LEVELS[currentLevelIndex];
+        currentGender = 'man';
+        usedTasks[currentLevel] = { man: [], woman: [] };
+        loadCurrentLevel();
+      }
+    }
+
+    function updateCounters() {
+      const levelTasks = tasks[currentLevel] || {};
+      const levelUsed = usedTasks[currentLevel] || { man: 0, woman: 0 };
+      
+      elements.manStats.textContent = `${levelUsed.man.length}/${levelTasks.man?.length || 0}`;
+      elements.womanStats.textContent = `${levelUsed.woman.length}/${levelTasks.woman?.length || 0}`;
+      elements.levelTitle.textContent = currentLevel;
+    }
+
+    function hasAvailableTasks(gender) {
+      const levelTasks = tasks[currentLevel];
+      const levelUsed = usedTasks[currentLevel];
+      return levelTasks?.[gender]?.length > 0 && 
+             levelUsed?.[gender]?.length < levelTasks[gender].length;
+    }
+
+    function getRandomUnusedTask(gender) {
+      const levelTasks = tasks[currentLevel][gender];
+      const levelUsed = usedTasks[currentLevel][gender];
+      const available = levelTasks.filter(task => !levelUsed.includes(task));
+      
+      if (available.length === 0) return null;
+      
+      const randomIndex = Math.floor(Math.random() * available.length);
+      const task = available[randomIndex];
+      levelUsed.push(task);
+      updateCounters();
+      return task;
+    }
+
+    function checkGameStatus() {
+      const manAvailable = hasAvailableTasks('man');
+      const womanAvailable = hasAvailableTasks('woman');
+      
+      if (!manAvailable && !womanAvailable) {
+        elements.wheelContainer.classList.add('disabled');
+        elements.gifWrapper.innerHTML = `
+          <div class="message">
+            ✅ Уровень "${currentLevel}" завершен!<br>
+            <button class="next-level-btn" onclick="nextLevel()" style="margin-top: 12px; padding: 8px 16px;">
+              Следующий уровень
+            </button>
+          </div>
+        `;
+        return false;
+      }
+      
+      elements.wheelContainer.classList.remove('disabled');
+      return true;
+    }
+
+    function showGif() {
+      const taskUrl = getRandomUnusedTask(currentGender);
+      
+      if (!taskUrl) {
+        elements.gifWrapper.innerHTML = '<div class="error message">Задания уровня закончились!</div>';
+        checkGameStatus();
+        return;
+      }
+      
+      elements.gifWrapper.innerHTML = '<div class="message loading">Загрузка GIF...</div>';
+      
+      const img = new Image();
+      img.onload = () => {
+        elements.gifWrapper.innerHTML = '';
+        elements.gifWrapper.appendChild(img);
+        checkGameStatus();
+      };
+      img.onerror = () => {
+        elements.gifWrapper.innerHTML = '<div class="error message">Ошибка загрузки GIF</div>';
+      };
+      img.src = taskUrl;
+    }
+
+    function spinWheel() {
+      if (isSpinning || elements.wheelContainer.classList.contains('disabled') || !isDataLoaded) {
+        return;
+      }
+      
+      isSpinning = true;
+      elements.gifWrapper.innerHTML = '<div class="message">Крутим рулетку...</div>';
+
+      const spinAmount = 1800 + Math.random() * 720;
+      rotationAngle += spinAmount;
+      elements.wheel.style.transform = `rotate(${rotationAngle}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        currentGender = currentGender === 'man' ? 'woman' : 'man';
+        elements.wheel.className = `wheel ${currentGender}`;
+        elements.genderIcon.textContent = currentGender === 'man' ? '🙎‍♂️' : '🙎‍♀️';
+        showGif();
+      }, 2000);
+    }
+
+    async function initGame() {
+      isDataLoaded = await loadCurrentLevel();
+      if (isDataLoaded) {
+        console.log('🎮 Игра готова!');
+      }
+    }
+
+    elements.wheelContainer.onclick = spinWheel;
+    elements.wheelContainer.ontouchstart = (e) => { e.preventDefault(); spinWheel(); };
+    elements.nextLevelBtn.onclick = nextLevel;
+
+    initGame();
+  </script>
+</body>
+</html>
