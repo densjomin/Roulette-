@@ -2,8 +2,11 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>18+ Рулетка - Уровни сложности</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>18+ Рулетка</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
   <style>
     :root {
       --bg: #050510;
@@ -27,31 +30,65 @@
       min-height: 100vh;
       background: radial-gradient(circle at top, #221133 0, #050510 70%);
       color: var(--text);
-      font-family: system-ui, sans-serif;
-      padding: 12px;
-      gap: 16px;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      /* Запрет выделения текста для ощущения приложения */
+      user-select: none;
+      -webkit-user-select: none;
     }
 
+    /* Основной контейнер */
     .main-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
       width: 100%;
-      max-width: 420px;
-      margin: 0 auto;
+      height: 100vh; /* Занимаем всю высоту экрана */
+      padding: 12px;
+      gap: 12px;
     }
 
+    /* БЛОК 1: Карточка с заданием (GIF) */
     .result-card {
       background: var(--card);
       border-radius: 20px;
-      padding: 12px;
+      padding: 0; /* Убрали паддинг чтобы картинка была крупнее */
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%;
-      height: 55vh;
+      /* На мобильном занимает часть экрана, на ПК - всё свободное место */
+      flex: 1; 
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .gif-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .gif-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* Картинка не обрезается, а вписывается */
+      border-radius: 20px;
+    }
+
+    /* БЛОК 2: Панель управления (снизу) */
+    .controls-wrapper {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: env(safe-area-inset-bottom, 20px); /* Отступ для iPhone */
     }
 
     .level-header {
@@ -65,24 +102,29 @@
     .level-title {
       background: var(--accent);
       color: white;
-      padding: 8px 16px;
+      padding: 10px 16px;
       border-radius: 12px;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 15px;
       flex: 1;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
     }
 
     .next-level-btn {
       background: var(--success);
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 10px 20px;
       border-radius: 12px;
       font-weight: 600;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 14px;
       transition: all 0.2s;
       white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+      /* Убираем синюю обводку при клике */
+      outline: none; 
     }
 
     .next-level-btn:hover {
@@ -90,32 +132,47 @@
       transform: scale(1.02);
     }
 
+    .next-level-btn:active {
+      transform: scale(0.95);
+    }
+
     .wheel-section {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
+      justify-content: space-between;
       gap: 16px;
       width: 100%;
-      max-width: 420px;
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      border-radius: 20px;
     }
 
     .task-counter {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 12px;
-      padding: 12px 16px;
       text-align: center;
-      min-width: 80px;
       font-size: 14px;
       font-weight: 600;
+      color: #aaa;
+    }
+    .task-counter span {
+      color: #fff;
+      font-size: 18px;
     }
 
     .wheel-container {
-      width: min(42vw, 180px);
-      height: min(42vw, 180px);
+      width: 80px;
+      height: 80px;
       cursor: pointer;
-      user-select: none;
-      opacity: 1;
       transition: opacity 0.3s ease;
+      /* Добавляем подсказку что можно кликать */
+      position: relative;
+    }
+
+    .wheel-container:hover {
+        transform: scale(1.05);
+    }
+    
+    .wheel-container:active {
+        transform: scale(0.95);
     }
 
     .wheel-container.disabled {
@@ -128,99 +185,109 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 4px solid #333;
+      border: 3px solid #333;
       position: relative;
       transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      box-shadow: 0 12px 30px rgba(74, 144, 226, 0.4);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
 
-    .wheel.man {
-      background: var(--wheel-man);
-      box-shadow: 0 12px 30px rgba(74, 144, 226, 0.4);
-    }
-
-    .wheel.woman {
-      background: var(--wheel-woman);
-      box-shadow: 0 12px 30px rgba(255, 105, 180, 0.4);
-    }
-
-    .wheel.mutual {
-      background: var(--wheel-mutual);
-      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.4);
-    }
+    .wheel.man { background: var(--wheel-man); box-shadow: 0 0 15px var(--wheel-man); }
+    .wheel.woman { background: var(--wheel-woman); box-shadow: 0 0 15px var(--wheel-woman); }
+    .wheel.mutual { background: var(--wheel-mutual); box-shadow: 0 0 15px var(--wheel-mutual); }
 
     .gender-icon {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 36px;
-      font-weight: 900;
-      color: #fff;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
-      line-height: 1;
+      font-size: 32px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
+    
+    .gender-icon.mutual { font-size: 20px; white-space: pre; line-height: 1; }
 
-    .gender-icon.mutual {
-      font-size: 28px;
-      white-space: pre;
-    }
-
-    .gif-wrapper {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: 16px;
-      background: rgba(0, 0, 0, 0.4);
-    }
-
-    .gif-wrapper img {
-      max-width: 98%;
-      max-height: 98%;
-      border-radius: 12px;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.9);
-      object-fit: contain;
-    }
-
-    .message {
-      color: #888;
-      font-size: 16px;
-      padding: 24px;
-      text-align: center;
-    }
-
-    .error {
-      color: var(--warning);
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .loading {
-      color: #aaa;
-    }
-
-    @media (min-width: 768px) {
-      .wheel-container {
-        width: 220px;
-        height: 220px;
-      }
-      .gender-icon {
-        font-size: 44px;
+    .spin-hint {
         color: #fff;
+        font-size: 12px;
+        opacity: 0.5;
+        margin-right: auto;
+        margin-left: 12px;
+    }
+
+    .message { color: #888; font-size: 16px; padding: 24px; text-align: center; }
+    .error { color: var(--warning); font-weight: 600; }
+    .loading { color: #aaa; }
+
+    /* --- АДАПТАЦИЯ ПОД ПК (Широкие экраны) --- */
+    @media (min-width: 1024px) {
+      body {
+        /* На ПК убираем скролл, чтобы выглядело как цельное приложение */
+        overflow: hidden; 
+        padding: 20px;
       }
-      .gender-icon.mutual {
-        font-size: 36px;
+
+      .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        height: 100vh;
+        gap: 30px;
+        justify-content: space-between; /* Раскидываем верх и низ */
       }
+
+      /* Окно с гифкой становится огромным */
       .result-card {
-        height: 60vh;
+        flex-grow: 1; /* Забирает все свободное место */
+        width: 100%;
+        background: #000; /* Черный фон для кинематографичности */
+        border: 1px solid #333;
+        box-shadow: 0 0 50px rgba(0,0,0,0.5);
       }
+
+      /* Панель управления "всплывает" снизу */
+      .controls-wrapper {
+        max-width: 800px;
+        background: var(--card);
+        padding: 20px 40px;
+        border-radius: 24px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        
+        /* Меняем раскладку на горизонтальную для ПК */
+        flex-direction: row; 
+        align-items: center;
+      }
+
+      .level-header {
+        width: auto;
+        flex: 1;
+      }
+      
+      .wheel-section {
+        width: auto;
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        gap: 30px;
+      }
+
+      .wheel-container {
+        width: 100px; /* Чуть больше на ПК */
+        height: 100px;
+      }
+
+      .spin-hint {
+        display: block; /* Показываем подсказку про пробел только на ПК */
+        font-size: 14px;
+      }
+    }
+
+    /* Скрываем подсказку про пробел на мобилках */
+    @media (max-width: 1023px) {
+        .spin-hint { display: none; }
     }
   </style>
 </head>
 <body>
+
   <div class="main-content">
     <div class="result-card">
       <div class="gif-wrapper" id="gifWrapper">
@@ -228,19 +295,23 @@
       </div>
     </div>
 
-    <div class="level-header">
-      <div class="level-title" id="levelTitle">Прелюдия</div>
-      <button class="next-level-btn" id="nextLevelBtn">Следующий уровень</button>
-    </div>
-
-    <div class="wheel-section">
-      <div class="task-counter" id="taskCounter">
-        Заданий: <span id="taskCount">0</span> / <span id="totalTasks">?</span>
+    <div class="controls-wrapper">
+      <div class="level-header">
+        <div class="level-title" id="levelTitle">Прелюдия</div>
+        <button class="next-level-btn" id="nextLevelBtn" title="Или нажмите Стрелку Вправо">Дальше (→)</button>
       </div>
-      
-      <div class="wheel-container" id="wheelContainer">
-        <div id="wheel" class="wheel man">
-          <div class="gender-icon" id="genderIcon">🙎‍♂️</div>
+
+      <div class="wheel-section">
+        <div class="task-counter" id="taskCounter">
+          <div><span id="taskCount">0</span> / <span id="totalTasks">?</span></div>
+        </div>
+        
+        <div class="spin-hint">Жми Пробел<br>чтобы крутить</div>
+
+        <div class="wheel-container" id="wheelContainer" title="Или нажмите Пробел">
+          <div id="wheel" class="wheel man">
+            <div class="gender-icon" id="genderIcon">🙎‍♂️</div>
+          </div>
         </div>
       </div>
     </div>
@@ -248,15 +319,15 @@
 
   <script>
     const LEVELS = [
-      { name: 'ПРЕЛЮДИЯ В ОДЕЖДЕ', type: 'separate', files: ['man-prelude-tasks.json', 'woman-prelude-tasks.json'] },
-      { name: 'В ОДЕЖДЕ', type: 'separate', files: ['man-Fully clothed-tasks.json', 'woman-Fully clothed-tasks.json'] },
-      { name: 'ВЗАИМНО В ОДЕЖДЕ', type: 'mutual', file: 'Mutually clothed-tasks.json' },
-      { name: 'РАЗДЕВАНИЕ', type: 'separate', files: ['man-Undressing-tasks.json', 'woman-Undressing-tasks.json'] },
-      { name: 'ПРЕЛЮДИЯ БЕЗ ОДЕЖДЫ', type: 'separate', files: ['man-Foreplay without clothes-tasks.json', 'woman-Foreplay without clothes-tasks.json'] },
-      { name: 'БЕЗ ОДЕЖДЫ', type: 'separate', files: ['man-Without clothes-tasks.json', 'woman-Without clothes-tasks.json'] },
-      { name: 'ВЗАИМНО БЕЗ ОДЕЖДЫ', type: 'mutual', file: 'Mutually without clothes-tasks.json' },
-      { name: 'СЕКС', type: 'separate', files: ['man-Sex-tasks.json', 'woman-Sex-tasks.json'] },
-      { name: 'ОРГАЗМ', type: 'separate', files: ['man-Orgasm-tasks.json', 'woman-Orgasm-tasks.json'] }
+      { name: 'prelude', type: 'separate', files: ['man-prelude-tasks.json', 'woman-prelude-tasks.json'] },
+      { name: 'Fully clothed', type: 'separate', files: ['man-Fully clothed-tasks.json', 'woman-Fully clothed-tasks.json'] },
+      { name: 'Mutually clothed', type: 'mutual', file: 'Mutually clothed-tasks.json' },
+      { name: 'Undressing', type: 'separate', files: ['man-Undressing-tasks.json', 'woman-Undressing-tasks.json'] },
+      { name: 'Foreplay without clothes', type: 'separate', files: ['man-Foreplay without clothes-tasks.json', 'woman-Foreplay without clothes-tasks.json'] },
+      { name: 'Without clothes', type: 'separate', files: ['man-Without clothes-tasks.json', 'woman-Without clothes-tasks.json'] },
+      { name: 'Mutually without clothes', type: 'mutual', file: 'Mutually without clothes-tasks.json' },
+      { name: 'Sex', type: 'separate', files: ['man-Sex-tasks.json', 'woman-Sex-tasks.json'] },
+      { name: 'Orgasm', type: 'separate', files: ['man-Orgasm-tasks.json', 'woman-Orgasm-tasks.json'] }
     ];
 
     let currentLevelIndex = 0;
@@ -281,7 +352,7 @@
     };
 
     async function loadCurrentLevel() {
-      elements.gifWrapper.innerHTML = '<div class="message loading">Уровень загружен!!!</div>';
+      elements.gifWrapper.innerHTML = '<div class="message loading">Загрузка уровня...</div>';
       
       try {
         if (currentLevel.type === 'mutual') {
@@ -308,7 +379,7 @@
           usedTasks = [];
           totalTasks = manData.length + womanData.length;
           
-          // Сброс на начало уровня: первый всегда парень
+          // Сброс: первый ход всегда мужской
           currentGenderIndex = 0;
           elements.genderIcon.textContent = '🙎‍♂️';
           elements.genderIcon.className = 'gender-icon';
@@ -317,14 +388,10 @@
         
         updateCounter();
         checkGameStatus();
-        console.log(`✅ Уровень "${currentLevel.name}" загружен: ${totalTasks} заданий`);
+        console.log(`✅ Уровень "${currentLevel.name}" загружен`);
         return true;
       } catch (error) {
-        elements.gifWrapper.innerHTML = `
-          <div class="error message">
-            ❌ Ошибка загрузки уровня "${currentLevel.name}": ${error.message}
-          </div>
-        `;
+        elements.gifWrapper.innerHTML = `<div class="error message">❌ Ошибка: ${error.message}</div>`;
         return false;
       }
     }
@@ -335,12 +402,7 @@
         currentLevel = LEVELS[currentLevelIndex];
         loadCurrentLevel();
       } else {
-        elements.gifWrapper.innerHTML = `
-          <div class="message">
-            🎉 ИГРА ЗАВЕРШЕНА! 🎉<br>
-            Пройдено всех уровней: ${currentLevelIndex + 1}
-          </div>
-        `;
+        elements.gifWrapper.innerHTML = `<div class="message">🎉 ИГРА ЗАВЕРШЕНА! 🎉</div>`;
       }
     }
 
@@ -352,25 +414,20 @@
 
     function getRandomUnusedTask() {
       let availableTasks = [];
-      
       if (currentLevel.type === 'mutual') {
-        // Mutual уровни - все задания из одного файла
         availableTasks = tasksData.filter(task => !usedTasks.includes(task));
       } else {
-        // Separate уровни - берем задание для ТЕКУЩЕГО пола (перед переключением)
         const gender = currentGenderIndex === 0 ? 'man' : 'woman';
         availableTasks = tasksData[gender].filter(task => !usedTasks.includes(task));
       }
       
-      if (availableTasks.length === 0) {
-        return null;
-      }
+      if (availableTasks.length === 0) return null;
       
       const randomIndex = Math.floor(Math.random() * availableTasks.length);
       const selectedTask = availableTasks[randomIndex];
       usedTasks.push(selectedTask);
       
-      // Переключаем пол ПОСЛЕ выбора задания, чтобы следующее было для другого пола
+      // Переключаем пол ДЛЯ СЛЕДУЮЩЕГО ХОДА
       if (currentLevel.type !== 'mutual') {
         currentGenderIndex = (currentGenderIndex + 1) % 2;
       }
@@ -379,32 +436,27 @@
       return selectedTask;
     }
 
-    function hasAvailableTasks() {
-      return usedTasks.length < totalTasks;
-    }
-
     function checkGameStatus() {
       if (!hasAvailableTasks()) {
         elements.wheelContainer.classList.add('disabled');
         elements.gifWrapper.innerHTML = `
           <div class="message">
-            ✅ Уровень "${currentLevel.name}" завершен!<br>
-            Выполнено: ${usedTasks.length}/${totalTasks}<br>
-            <button class="next-level-btn" onclick="nextLevel()" style="margin-top: 12px; padding: 8px 16px;">
-              Следующий уровень
+            ✅ Уровень пройден!<br>
+            <button class="next-level-btn" onclick="nextLevel()" style="margin-top:20px;">
+              Следующий уровень (→)
             </button>
           </div>
         `;
         return false;
       }
-      
       elements.wheelContainer.classList.remove('disabled');
       return true;
     }
 
+    function hasAvailableTasks() { return usedTasks.length < totalTasks; }
+
     function showGif(taskUrl) {
-      elements.gifWrapper.innerHTML = '<div class="message loading">Загрузка GIF...</div>';
-      
+      elements.gifWrapper.innerHTML = '<div class="message loading">...</div>';
       const img = new Image();
       img.onload = () => {
         elements.gifWrapper.innerHTML = '';
@@ -412,19 +464,17 @@
         checkGameStatus();
       };
       img.onerror = () => {
-        elements.gifWrapper.innerHTML = '<div class="error message">Ошибка загрузки GIF</div>';
+        elements.gifWrapper.innerHTML = '<div class="error message">Ошибка картинки</div>';
       };
       img.src = taskUrl;
     }
 
     function spinWheel() {
-      if (isSpinning || elements.wheelContainer.classList.contains('disabled') || !isDataLoaded) {
-        return;
-      }
+      if (isSpinning || elements.wheelContainer.classList.contains('disabled') || !isDataLoaded) return;
       
       isSpinning = true;
-      elements.gifWrapper.innerHTML = '<div class="message">Крутим рулетку...</div>';
-
+      
+      // Крутим
       const spinAmount = 1800 + Math.random() * 720;
       rotationAngle += spinAmount;
       elements.wheel.style.transform = `rotate(${rotationAngle}deg)`;
@@ -432,40 +482,54 @@
       setTimeout(() => {
         isSpinning = false;
         
-        // 1. Сначала получаем задание (для текущего игрока)
-        // Внутри этой функции индекс переключается на следующего игрока
+        // 1. Получаем задание
         const taskUrl = getRandomUnusedTask();
         
-        // 2. Теперь обновляем визуал колеса (для СЛЕДУЮЩЕГО игрока), 
-        // так как getRandomUnusedTask уже сменил индекс
+        // 2. Обновляем цвет колеса для следующего игрока
         if (currentLevel.type !== 'mutual') {
           const isNextMan = currentGenderIndex === 0;
           elements.genderIcon.textContent = isNextMan ? '🙎‍♂️' : '🙎‍♀️';
           elements.wheel.className = isNextMan ? 'wheel man' : 'wheel woman';
         }
         
-        // 3. Показываем результат
-        if (taskUrl) {
-          showGif(taskUrl);
-        } else {
-          checkGameStatus();
-        }
+        // 3. Показываем
+        if (taskUrl) showGif(taskUrl);
+        else checkGameStatus();
+        
       }, 2000);
     }
 
     async function initGame() {
       isDataLoaded = await loadCurrentLevel();
-      if (isDataLoaded) {
-        console.log('🎮 Игра готова!');
-      }
     }
 
-    // События
+    // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
+
+    // 1. Клик мышкой по колесу
     elements.wheelContainer.onclick = spinWheel;
-    elements.wheelContainer.ontouchstart = (e) => { e.preventDefault(); spinWheel(); };
+
+    // 2. Тач по колесу (для iPhone)
+    elements.wheelContainer.ontouchstart = (e) => { 
+        e.preventDefault(); 
+        spinWheel(); 
+    };
+
+    // 3. Клик по кнопке "Следующий уровень"
     elements.nextLevelBtn.onclick = nextLevel;
 
-    // Запуск
+    // 4. КЛАВИАТУРА (для ПК)
+    document.addEventListener('keydown', (event) => {
+        // Пробел (Space) -> Крутить
+        if (event.code === 'Space') {
+            event.preventDefault(); // Чтобы страница не скроллилась вниз
+            spinWheel();
+        }
+        // Стрелка вправо (ArrowRight) -> Следующий уровень
+        if (event.code === 'ArrowRight') {
+            nextLevel();
+        }
+    });
+
     initGame();
   </script>
 </body>
