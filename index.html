@@ -352,7 +352,7 @@
       { name: 'Foreplay without clothes', type: 'separate', files: ['man-Foreplay without clothes-tasks.json', 'woman-Foreplay without clothes-tasks.json'] },
       { name: 'Without clothes', type: 'separate', files: ['man-Without clothes-tasks.json', 'woman-Without clothes-tasks.json'] },
       { name: 'Mutually without clothes', type: 'mutual', file: 'Mutually without clothes-tasks.json' },
-      { name: 'Sex', type: 'separate', files: ['man-Sex-tasks.json', 'woman-Sex-tasks.json'] },
+      //{ name: 'Sex', type: 'separate', files: ['man-Sex-tasks.json', 'woman-Sex-tasks.json'] },
       { name: 'Orgasm', type: 'separate', files: ['man-Orgasm-tasks.json', 'woman-Orgasm-tasks.json'] }
     ];
 
@@ -444,8 +444,8 @@
 
         stopTimer();
         
-        // Рандом от 60 до 300 секунд (1 - 5 минут)
-        let duration = Math.floor(Math.random() * (300 - 60 + 1)) + 60;
+        // Рандом от 60 до 180 секунд (1 - 3 минут)
+        let duration = Math.floor(Math.random() * (180 - 60 + 1)) + 60;
         
         updateTimerVisual(duration);
 
